@@ -4,6 +4,7 @@ import de.karrieretutor.springboot.domain.Bestellung;
 import de.karrieretutor.springboot.domain.Kunde;
 import de.karrieretutor.springboot.domain.Warenkorb;
 import de.karrieretutor.springboot.service.BestellService;
+import de.karrieretutor.springboot.service.EmailService;
 import de.karrieretutor.springboot.service.KundenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -32,6 +33,8 @@ public class BestellController {
     KundenService kundenService;
     @Autowired
     MessageSource messageSource;
+    @Autowired
+    EmailService emailService;
 
     @ModelAttribute(CART)
     public Warenkorb getInitializedWarenkorb(HttpSession session) {
@@ -78,7 +81,11 @@ public class BestellController {
         String message = messageSource.getMessage("order.failure", null, locale);
         boolean istNeuerKunde = (kunde.getId() == null);
         Bestellung neueBestellung = bestellService.speichere(bestellung, istNeuerKunde);
+        kunde.setSprache(locale.getLanguage());
         if (neueBestellung != null) {
+            // Email versenden
+            emailService.bestellungBestaetigung(neueBestellung);
+
             message = messageSource.getMessage("order.success", null, locale);
             Warenkorb warenkorb = getInitializedWarenkorb(session);
             if (warenkorb != null)
@@ -91,9 +98,8 @@ public class BestellController {
     @GetMapping("/bestellung/{id}")
     public String bestellung(@PathVariable Long id, Model model, HttpSession session) {
         Kunde kunde = (Kunde)session.getAttribute(CUSTOMER);
-        // TODO: Kunden-Berechtiung prüfen
         if (kunde != null) {
-            Bestellung bestellung = bestellService.lade(id);
+            Bestellung bestellung = bestellService.lade(kunde.getId(), id);
             if (bestellung == null) {
                 bestellung = new Bestellung();
                 model.addAttribute(MESSAGE, "No order found for ID: " + id);
@@ -108,7 +114,6 @@ public class BestellController {
         Kunde kunde = (Kunde)session.getAttribute(CUSTOMER);
         if (kunde != null) {
             List<Bestellung> bestellungen = bestellService.bestellungenVonKunde(kunde.getId());
-            // TODO: User-Berechtigung prüfen
             model.addAttribute(ORDERS, bestellungen);
         }
         return "orders";
