@@ -3,7 +3,6 @@ package de.karrieretutor.springboot.controller;
 import de.karrieretutor.springboot.domain.Kunde;
 import de.karrieretutor.springboot.domain.Warenkorb;
 import de.karrieretutor.springboot.dto.Login;
-import de.karrieretutor.springboot.service.EmailService;
 import de.karrieretutor.springboot.service.KundenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -28,8 +27,6 @@ public class KundenController {
     KundenService kundenService;
     @Autowired
     MessageSource messageSource;
-    @Autowired
-    EmailService emailService;
 
     @GetMapping("/")
     public String kundenDetails(Model model, HttpSession session) {
@@ -99,7 +96,8 @@ public class KundenController {
         if (result.hasErrors()) {
             return "login";
         }
-        if (kundenService.findByEmail(login.getEmail()) != null) {
+        Kunde kunde = kundenService.findByEmail(login.getEmail());
+        if (kunde != null) {
             result.rejectValue("email", "validation.register.email.reserved");
             return "login";
         }
@@ -122,19 +120,11 @@ public class KundenController {
         if (result.hasErrors()) {
             return "customer";
         }
-        Kunde vorhandenerKunde = kundenService.findByEmail(kunde.getEmail());
-        if (vorhandenerKunde != null && vorhandenerKunde.getId() != kunde.getId()) {
-            result.rejectValue("email", "validation.register.email.reserved");
-            return "customer";
-        }
-
         Kunde gespeicherterKunde = kundenService.speichern(kunde);
         String message = messageSource.getMessage("customer.failure", null, locale);
         if (gespeicherterKunde != null) {
             session.setAttribute(CUSTOMER, gespeicherterKunde);
             message = messageSource.getMessage("customer.success", null, locale);
-            emailService.kundenDatenGeandert(gespeicherterKunde);
-
         }
         redirect.addFlashAttribute(MESSAGE, message);
         return "redirect:/index.html";
