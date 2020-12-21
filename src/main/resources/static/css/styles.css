@@ -1,6 +1,6 @@
 .portfolio-header {
   position: relative;
-  background-image: url(../images/headerbg.jpg);
+  background-image: url(../images/head-bg.jpg);
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -179,7 +179,7 @@ img.article-image {
 }
 
 footer {
-  background-image: url(../images/footer-background.png);
+  background-image: url(../images/head-bg.jpg);
   background-size: cover;
 }
 
