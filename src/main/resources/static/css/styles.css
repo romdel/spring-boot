@@ -1,6 +1,6 @@
 .portfolio-header {
   position: relative;
-  background-image: url(../images/header-bg.jpg);
+  background-image: url(../images/headerbg.jpg);
   background-size: cover;
   background-repeat: no-repeat;
 }
@@ -119,6 +119,7 @@
   overflow:hidden;
   height: 200px;
   background-color: inherit;
+  background-size: cover;
 }
 img.article-image {
   height: 100%;
